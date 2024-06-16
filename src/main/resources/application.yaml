@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: chillin
+  ai:
+    openai:
+      api-key: ${API_KEY}
+      chat:
+        enabled: false
+      embedding:
+        enabled: false
+      image:
+        enabled: true
+        options:
+          size: ${IMAGE_SIZE}
+  datasource:
+    driver-class-name: ${DB_DRIVER_CLASS_NAME:org.h2.Driver}
+    url: ${DB_URL:jdbc:h2:mem:testdb}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+logging:
+  level:
+    web: debug
+custom:
+  image:
+    instruction:
+      prefix: ${IMAGE_INSTRUCTION_PREFIX:""}
+      postfix: ${IMAGE_INSTRUCTION_POSTFIX:""}
+  aws:
+    accessKey: ${AWS_ACCESS_KEY}
+    secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+    bucket:
+      name: ${AWS_BUCKET_NAME}
+    durationMinutes: ${AWS_DURATION_MINUTES}
