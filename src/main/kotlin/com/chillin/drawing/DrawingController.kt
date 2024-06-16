@@ -1,6 +1,8 @@
 package com.chillin.drawing
 
 import com.chillin.drawing.domain.DrawingType
+import com.chillin.drawing.request.ImageGenerationRequest
+import com.chillin.drawing.response.ImageGenerationResponse
 import com.chillin.openai.DallEService
 import com.chillin.s3.S3Service
 import org.springframework.http.ResponseEntity
@@ -18,16 +20,16 @@ class DrawingController(
     private val drawingService: DrawingService
 ) {
     @PostMapping("/gen")
-    fun generateDrawing(@RequestBody imageGenerationRequest: ImageGenerationRequest): ResponseEntity<Unit> {
+    fun generateDrawing(@RequestBody imageGenerationRequest: ImageGenerationRequest): ResponseEntity<ImageGenerationResponse> {
         val filename = "generative/${UUID.randomUUID()}.jpeg"
         val rawPrompt = imageGenerationRequest.prompt
+
         val (url, revisedPrompt) = dallEService.generateImage(rawPrompt)
-
         val presignedUrl = s3Service.uploadImage(filename, url)
-        println("Presigned URL: $presignedUrl")
+        val savedImage = drawingService.save(filename, DrawingType.GENERATED, rawPrompt, revisedPrompt)
 
-        drawingService.save(filename, DrawingType.GENERATED, rawPrompt, revisedPrompt)
+        val responseBody = ImageGenerationResponse(savedImage.drawingId, savedImage.filename, presignedUrl)
 
-        return ResponseEntity.status(201).build()
+        return ResponseEntity.status(201).body(responseBody)
     }
 }

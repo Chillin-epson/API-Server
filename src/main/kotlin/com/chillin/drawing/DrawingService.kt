@@ -8,8 +8,14 @@ import org.springframework.stereotype.Service
 class DrawingService(
     private val drawingRepository: DrawingRepository
 ) {
-    fun save(filename: String, drawingType: DrawingType, rawPrompt: String? = null, revisedPrompt: String? = null) {
+    fun save(
+        filename: String,
+        drawingType: DrawingType,
+        rawPrompt: String? = null,
+        revisedPrompt: String? = null
+    ): Drawing {
         val drawing = Drawing(filename, drawingType, rawPrompt, revisedPrompt)
-        drawingRepository.save(drawing)
+
+        return drawingRepository.save(drawing)
     }
 }
