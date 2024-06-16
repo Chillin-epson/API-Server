@@ -10,6 +10,7 @@ spring:
         enabled: false
       image:
         enabled: true
+        api-key: ${API_KEY}
         options:
           size: ${IMAGE_SIZE}
   datasource:
