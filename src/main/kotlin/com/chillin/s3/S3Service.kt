@@ -20,11 +20,12 @@ class S3Service(
     private val bucketName: String,
     private val durationMinutes: Long
 ) {
-    fun uploadImage(filename: String, url: String): String {
+    fun uploadImage(filename: String, url: String, prompt: String): String {
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(filename)
             .contentType(MediaType.IMAGE_JPEG_VALUE)
+            .metadata(mapOf("x-amz-meta-prompt" to prompt))
             .build()
 
         val imageData = URL(url).openStream().use(InputStream::readBytes)
