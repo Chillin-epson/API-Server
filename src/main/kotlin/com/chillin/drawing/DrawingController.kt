@@ -25,7 +25,7 @@ class DrawingController(
         val rawPrompt = imageGenerationRequest.prompt
 
         val (url, revisedPrompt) = dallEService.generateImage(rawPrompt)
-        val presignedUrl = s3Service.uploadImage(filename, url)
+        val presignedUrl = s3Service.uploadImage(filename, url, revisedPrompt)
         val savedImage = drawingService.save(filename, DrawingType.GENERATED, rawPrompt, revisedPrompt)
 
         val responseBody = ImageGenerationResponse(savedImage.drawingId, savedImage.filename, presignedUrl)
