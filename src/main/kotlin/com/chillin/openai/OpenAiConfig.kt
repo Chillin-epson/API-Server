@@ -12,9 +12,6 @@ class OpenAiConfig {
     @Value("\${spring.ai.openai.api-key}")
     private lateinit var apiKey: String
 
-    @Value("\${custom.image.path}")
-    private lateinit var imageBasePath: String
-
     @Value("\${custom.image.instruction.prefix}")
     private lateinit var instructionPrefix: String
 
@@ -34,10 +31,5 @@ class OpenAiConfig {
     @Bean
     fun instructionPostfix(): String {
         return instructionPostfix
-    }
-
-    @Bean
-    fun imageBasePath(): String {
-        return imageBasePath
     }
 }
