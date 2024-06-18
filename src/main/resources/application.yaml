@@ -21,6 +21,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 logging:
   level:
     web: debug
@@ -35,3 +39,7 @@ custom:
     bucket:
       name: ${AWS_BUCKET_NAME}
     durationMinutes: ${AWS_DURATION_MINUTES}
+  epson-connect:
+    printer-address: ${EPSON_PRINTER_ADDRESS}
+    client-id: ${EPSON_CLIENT_ID}
+    client-secret: ${EPSON_CLIENT_SECRET}
