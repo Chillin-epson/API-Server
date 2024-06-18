@@ -37,6 +37,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("software.amazon.awssdk:s3:2.26.3")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis:3.3.0")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
@@ -44,6 +45,9 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
