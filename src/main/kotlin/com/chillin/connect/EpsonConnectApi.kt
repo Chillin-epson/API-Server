@@ -1,11 +1,12 @@
 package com.chillin.connect
 
+import com.chillin.connect.request.PrintSettingsRequest
 import com.chillin.connect.response.AuthenticationResponse
+import com.chillin.connect.response.PrintSettingsResponse
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
@@ -28,7 +29,6 @@ class EpsonConnectApi(
             val request = Request.Builder()
                 .post(epsonConnectProperties.authenticationRequest())
                 .url("$BASE_URL/api/1/printing/oauth2/auth/token?subject=printer")
-                .header(HttpHeaders.CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE)
                 .header(HttpHeaders.AUTHORIZATION, epsonConnectProperties.basicHeader())
                 .build()
 
@@ -43,5 +43,23 @@ class EpsonConnectApi(
                     accessToken
                 } ?: throw RuntimeException("Authentication failed")
         }
+    }
+
+    fun setPrintSettings(): PrintSettingsResponse {
+        logger.info("Setting print settings")
+        val accessToken = authenticate()
+        val deviceId = redisTemplate.opsForValue().get("deviceId")
+        val request = Request.Builder()
+            .post(PrintSettingsRequest().toRequestBody())
+            .url("$BASE_URL/api/1/printing/printers/$deviceId/jobs")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+            .build()
+
+        return epsonConnectClient.call(request)
+            .bind(PrintSettingsResponse::class.java)
+            ?.apply {
+                logger.info("Created Job ID: $id")
+                logger.info("Upload URI: $uploadUri")
+            } ?: throw RuntimeException("Failed to set print settings")
     }
 }

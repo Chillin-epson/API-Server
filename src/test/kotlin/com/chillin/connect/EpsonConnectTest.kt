@@ -48,6 +48,16 @@ class EpsonConnectTest(
             }
         }
     }
+
+    given("기본 프린트 설정으로") {
+        `when`("값을 설정하면") {
+            val response = epsonConnectApi.setPrintSettings()
+            then("Job ID와 업로드 URI가 생성되어야 한다.") {
+                response.id shouldNotBe ""
+                response.uploadUri shouldNotBe ""
+            }
+        }
+    }
 }) {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         val keys = redisTemplate.keys("*")

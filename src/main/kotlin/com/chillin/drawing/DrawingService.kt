@@ -15,7 +15,6 @@ class DrawingService(
         revisedPrompt: String? = null
     ): Drawing {
         val drawing = Drawing(filename, drawingType, rawPrompt, revisedPrompt)
-
         return drawingRepository.save(drawing)
     }
 }

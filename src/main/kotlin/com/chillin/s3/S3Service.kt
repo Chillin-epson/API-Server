@@ -4,7 +4,6 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.GetObjectAclRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
@@ -36,11 +35,6 @@ class S3Service(
 
     fun getImageUrl(filename: String): String {
         val getObjectRequest = GetObjectRequest.builder()
-            .bucket(bucketName)
-            .key(filename)
-            .build()
-
-        GetObjectAclRequest.builder()
             .bucket(bucketName)
             .key(filename)
             .build()

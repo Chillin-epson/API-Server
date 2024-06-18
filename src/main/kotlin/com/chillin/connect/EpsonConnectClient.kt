@@ -23,7 +23,7 @@ class EpsonConnectClient(
     }
 
     private fun handleResponse(response: Response) {
-        takeUnless { response.isSuccessful }?.let {
+        if (response.isSuccessful.not()) {
             logger.error("${HttpStatus.valueOf(response.code)}: ${response.message}")
             throw RuntimeException("Request failed")
         }
