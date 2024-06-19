@@ -40,4 +40,17 @@ object PrintOptions {
         const val COLOR = "color"
         const val MONO = "mono"
     }
+
+    object FileExtension {
+        private const val PDF = "pdf"
+        private const val JPEG = "jpeg"
+
+        fun fromContentType(contentType: String): String {
+            return when (contentType) {
+                org.springframework.http.MediaType.APPLICATION_PDF_VALUE -> PDF
+                org.springframework.http.MediaType.IMAGE_JPEG_VALUE -> JPEG
+                else -> throw IllegalArgumentException("Unsupported content type: $contentType")
+            }
+        }
+    }
 }
