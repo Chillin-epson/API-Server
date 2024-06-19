@@ -75,11 +75,11 @@ class EpsonConnectService(
         logger.info("Uploading file to print")
         val (byteArray, contentType) = fileData
         val binary = byteArray.toRequestBody(contentType.toMediaType())
-        val mediaSubtype = MediaSubtype.parse(contentType)
+        val extension = MediaSubtype.parse(contentType)
 
         val request = Request.Builder()
             .post(binary)
-            .url("$uploadUri&File=1.$mediaSubtype")
+            .url("$uploadUri&File=1.$extension")
             .build()
 
         val response = epsonConnectClient.call(request)

@@ -9,8 +9,8 @@ enum class MediaSubtype(val value: String) {
     FORM_DATA("form-data");
 
     companion object {
-        fun parse(contentTypeValue: String): MediaSubtype {
-            return when (contentTypeValue.substringAfterLast('.')) {
+        fun parse(contentTypeValue: String?): MediaSubtype {
+            return when (contentTypeValue?.substringAfterLast('.')) {
                 PDF.value -> PDF
                 JPEG.value -> JPEG
                 JSON.value -> JSON
