@@ -23,4 +23,6 @@ class DrawingService(
             .orElseThrow { NoSuchElementException("Drawing not found") }
             .filename
     }
+
+    fun getAllByType(type: DrawingType) = drawingRepository.findAllByTypeOrderByCreatedAtDesc(type)
 }
