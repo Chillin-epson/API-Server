@@ -1,7 +1,7 @@
 package com.chillin.drawing
 
 import com.chillin.drawing.domain.Drawing
-import com.chillin.drawing.domain.DrawingType
+import com.chillin.type.DrawingType
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,5 +16,11 @@ class DrawingService(
     ): Drawing {
         val drawing = Drawing(filename, drawingType, rawPrompt, revisedPrompt)
         return drawingRepository.save(drawing)
+    }
+
+    fun getNameById(drawingId: Long): String {
+        return drawingRepository.findById(drawingId)
+            .orElseThrow { NoSuchElementException("Drawing not found") }
+            .filename
     }
 }

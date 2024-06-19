@@ -1,6 +1,6 @@
 package com.chillin.s3
 
-import org.springframework.http.MediaType
+import com.chillin.type.MediaSubtype
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
@@ -20,10 +20,11 @@ class S3Service(
     private val durationMinutes: Long
 ) {
     fun uploadImage(filename: String, url: String, prompt: String): String {
+        val contentType = MediaSubtype.parse(filename).toMediaTypeValue()
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(filename)
-            .contentType(MediaType.IMAGE_JPEG_VALUE)
+            .contentType(contentType)
             .metadata(mapOf("x-amz-meta-prompt" to prompt))
             .build()
 
@@ -47,5 +48,18 @@ class S3Service(
         return s3Presigner.presignGetObject(getObjectPresignRequest)
             .url()
             .toString()
+    }
+
+    fun getImageData(filename: String): Pair<ByteArray, String> {
+        val getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(filename)
+            .build()
+
+        return s3Client.getObjectAsBytes(getObjectRequest).let {
+            val subtype = it.response().contentType()
+            val contentType = MediaSubtype.parse(subtype).toMediaTypeValue()
+            Pair(it.asByteArray(), contentType)
+        }
     }
 }

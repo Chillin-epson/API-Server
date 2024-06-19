@@ -1,20 +1,21 @@
 package com.chillin.connect
 
-import com.chillin.connect.request.PrintOptions
+import com.chillin.connect.EpsonConnectClient.Companion.bind
 import com.chillin.connect.request.PrintSettingsRequest
 import com.chillin.connect.response.AuthenticationResponse
 import com.chillin.connect.response.PrintSettingsResponse
+import com.chillin.type.MediaSubtype
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
-@Component
-class EpsonConnectApi(
+@Service
+class EpsonConnectService(
     private val epsonConnectProperties: EpsonConnectProperties,
     private val epsonConnectClient: EpsonConnectClient,
     private val redisTemplate: StringRedisTemplate
@@ -23,7 +24,7 @@ class EpsonConnectApi(
         private const val BASE_URL = "https://api.epsonconnect.com"
     }
 
-    private val logger = LoggerFactory.getLogger(EpsonConnectApi::class.java)
+    private val logger = LoggerFactory.getLogger(EpsonConnectService::class.java)
 
     fun authenticate(): String {
         return redisTemplate.opsForValue().get("accessToken") ?: run {
@@ -69,25 +70,27 @@ class EpsonConnectApi(
 
     fun uploadFileToPrint(
         uploadUri: String,
-        fileData: ByteArray,
-        contentType: String
+        fileData: Pair<ByteArray, String>
     ): Boolean {
         logger.info("Uploading file to print")
-        val binary = fileData.toRequestBody(contentType.toMediaType())
-        val fileExtension = PrintOptions.FileExtension.fromContentType(contentType)
+        val (byteArray, contentType) = fileData
+        val binary = byteArray.toRequestBody(contentType.toMediaType())
+        val mediaSubtype = MediaSubtype.parse(contentType)
 
         val request = Request.Builder()
             .post(binary)
-            .url("$uploadUri&File=1.$fileExtension")
+            .url("$uploadUri&File=1.$mediaSubtype")
             .build()
 
+        val response = epsonConnectClient.call(request)
         logger.info("Uploaded file to Epson Connect successfully")
-        return epsonConnectClient.call(request).isSuccessful
+
+        return response.isSuccessful
     }
 
-    fun print(fileData: ByteArray, contentType: String, printSettings: PrintSettingsRequest): Boolean {
+    fun print(fileData: Pair<ByteArray, String>, printSettings: PrintSettingsRequest): Boolean {
         val (jobId, uploadUri) = setPrintSettings(printSettings)
-        uploadFileToPrint(uploadUri, fileData, contentType)
+        uploadFileToPrint(uploadUri, fileData)
 
         logger.info("Executing print job: $jobId")
         val accessToken = authenticate()
@@ -99,6 +102,9 @@ class EpsonConnectApi(
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .build()
 
-        return epsonConnectClient.call(request).isSuccessful
+        val response = epsonConnectClient.call(request)
+        logger.info("Printed file successfully")
+
+        return response.isSuccessful
     }
 }
