@@ -1,12 +1,17 @@
 package com.chillin.connect
 
+import com.chillin.connect.request.PrintOptions
 import com.chillin.connect.request.PrintSettingsRequest
 import com.chillin.connect.response.AuthenticationResponse
 import com.chillin.connect.response.PrintSettingsResponse
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
@@ -45,12 +50,12 @@ class EpsonConnectApi(
         }
     }
 
-    fun setPrintSettings(): PrintSettingsResponse {
+    fun setPrintSettings(printSettings: PrintSettingsRequest = PrintSettingsRequest()): PrintSettingsResponse {
         logger.info("Setting print settings")
         val accessToken = authenticate()
         val deviceId = redisTemplate.opsForValue().get("deviceId")
         val request = Request.Builder()
-            .post(PrintSettingsRequest().toRequestBody())
+            .post(printSettings.toRequestBody())
             .url("$BASE_URL/api/1/printing/printers/$deviceId/jobs")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .build()
@@ -61,5 +66,23 @@ class EpsonConnectApi(
                 logger.info("Created Job ID: $id")
                 logger.info("Upload URI: $uploadUri")
             } ?: throw RuntimeException("Failed to set print settings")
+    }
+
+    fun uploadFileToPrint(
+        uploadUri: String,
+        fileData: ByteArray,
+        contentType: String = MediaType.IMAGE_JPEG_VALUE
+    ): Response {
+        logger.info("Uploading file to print")
+
+        val binary = fileData.toRequestBody(contentType.toMediaType())
+        val fileExtension = PrintOptions.FileExtension.fromContentType(contentType)
+        val request = Request.Builder()
+            .post(binary)
+            .url("$uploadUri&File=1.$fileExtension")
+            .build()
+
+        logger.info("File uploaded successfully")
+        return epsonConnectClient.call(request)
     }
 }

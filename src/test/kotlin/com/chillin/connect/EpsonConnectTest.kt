@@ -58,6 +58,18 @@ class EpsonConnectTest(
             }
         }
     }
+
+    given("프린트 설정한 뒤") {
+        val (_, uploadUri) = epsonConnectApi.setPrintSettings()
+
+        `when`("업로드를 시도하면") {
+            val fileData = ByteArray(0)
+            val response = epsonConnectApi.uploadFileToPrint(uploadUri, fileData)
+            then("업로드가 성공해야 한다.") {
+                response.code shouldBe 200
+            }
+        }
+    }
 }) {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         val keys = redisTemplate.keys("*")
