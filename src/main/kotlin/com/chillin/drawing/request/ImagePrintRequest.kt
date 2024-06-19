@@ -4,6 +4,5 @@ import com.chillin.type.PrintScale
 
 data class ImagePrintRequest(
     val drawingId: Long,
-    val printScale: PrintScale
-) {
-}
+    var scale: PrintScale = PrintScale.LARGE
+)

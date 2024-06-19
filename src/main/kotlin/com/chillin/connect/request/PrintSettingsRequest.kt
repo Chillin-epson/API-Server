@@ -22,7 +22,7 @@ data class PrintSettingsRequest(
 
     constructor(imagePrintRequest: ImagePrintRequest) : this() {
         this.printSetting = PrintSetting(
-            mediaSize = imagePrintRequest.printScale.toMediaSize()
+            mediaSize = imagePrintRequest.scale.toMediaSize()
         )
     }
 
