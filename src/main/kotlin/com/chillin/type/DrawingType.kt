@@ -1,4 +1,4 @@
-package com.chillin.drawing.domain
+package com.chillin.type
 
 enum class DrawingType {
     GENERATED,

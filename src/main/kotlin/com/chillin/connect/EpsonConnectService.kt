@@ -1,22 +1,21 @@
 package com.chillin.connect
 
-import com.chillin.connect.request.PrintOptions
+import com.chillin.connect.EpsonConnectClient.Companion.bind
 import com.chillin.connect.request.PrintSettingsRequest
 import com.chillin.connect.response.AuthenticationResponse
 import com.chillin.connect.response.PrintSettingsResponse
+import com.chillin.type.MediaSubtype
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
-@Component
-class EpsonConnectApi(
+@Service
+class EpsonConnectService(
     private val epsonConnectProperties: EpsonConnectProperties,
     private val epsonConnectClient: EpsonConnectClient,
     private val redisTemplate: StringRedisTemplate
@@ -25,7 +24,7 @@ class EpsonConnectApi(
         private const val BASE_URL = "https://api.epsonconnect.com"
     }
 
-    private val logger = LoggerFactory.getLogger(EpsonConnectApi::class.java)
+    private val logger = LoggerFactory.getLogger(EpsonConnectService::class.java)
 
     fun authenticate(): String {
         return redisTemplate.opsForValue().get("accessToken") ?: run {
@@ -50,10 +49,11 @@ class EpsonConnectApi(
         }
     }
 
-    fun setPrintSettings(printSettings: PrintSettingsRequest = PrintSettingsRequest()): PrintSettingsResponse {
+    fun setPrintSettings(printSettings: PrintSettingsRequest): PrintSettingsResponse {
         logger.info("Setting print settings")
         val accessToken = authenticate()
         val deviceId = redisTemplate.opsForValue().get("deviceId")
+
         val request = Request.Builder()
             .post(printSettings.toRequestBody())
             .url("$BASE_URL/api/1/printing/printers/$deviceId/jobs")
@@ -70,19 +70,41 @@ class EpsonConnectApi(
 
     fun uploadFileToPrint(
         uploadUri: String,
-        fileData: ByteArray,
-        contentType: String = MediaType.IMAGE_JPEG_VALUE
-    ): Response {
+        fileData: Pair<ByteArray, String>
+    ): Boolean {
         logger.info("Uploading file to print")
+        val (byteArray, contentType) = fileData
+        val binary = byteArray.toRequestBody(contentType.toMediaType())
+        val mediaSubtype = MediaSubtype.parse(contentType)
 
-        val binary = fileData.toRequestBody(contentType.toMediaType())
-        val fileExtension = PrintOptions.FileExtension.fromContentType(contentType)
         val request = Request.Builder()
             .post(binary)
-            .url("$uploadUri&File=1.$fileExtension")
+            .url("$uploadUri&File=1.$mediaSubtype")
             .build()
 
-        logger.info("File uploaded successfully")
-        return epsonConnectClient.call(request)
+        val response = epsonConnectClient.call(request)
+        logger.info("Uploaded file to Epson Connect successfully")
+
+        return response.isSuccessful
+    }
+
+    fun print(fileData: Pair<ByteArray, String>, printSettings: PrintSettingsRequest): Boolean {
+        val (jobId, uploadUri) = setPrintSettings(printSettings)
+        uploadFileToPrint(uploadUri, fileData)
+
+        logger.info("Executing print job: $jobId")
+        val accessToken = authenticate()
+        val deviceId = redisTemplate.opsForValue().get("deviceId")
+
+        val request = Request.Builder()
+            .post("".toRequestBody())
+            .url("$BASE_URL/api/1/printing/printers/$deviceId/jobs/$jobId/print")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+            .build()
+
+        val response = epsonConnectClient.call(request)
+        logger.info("Printed file successfully")
+
+        return response.isSuccessful
     }
 }

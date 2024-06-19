@@ -1,6 +1,9 @@
 package com.chillin.connect.request
 
+import com.chillin.drawing.request.ImagePrintRequest
+import com.chillin.type.PrintMode
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -9,13 +12,20 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.http.MediaType
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 @JsonNaming(SnakeCaseStrategy::class)
 data class PrintSettingsRequest(
     val jobName: String = "sample",
-    val printMode: String = PrintOptions.PrintMode.PHOTO,
-    val printSetting: PrinterSetting? = null
+    val printMode: PrintMode = PrintMode.PHOTO,
+    var printSetting: PrintSetting? = null
 ) {
+
+    constructor(imagePrintRequest: ImagePrintRequest) : this() {
+        this.printSetting = PrintSetting(
+            mediaSize = imagePrintRequest.printScale.toMediaSize()
+        )
+    }
+
     fun toRequestBody(): RequestBody {
         return jacksonObjectMapper()
             .writeValueAsString(this)
