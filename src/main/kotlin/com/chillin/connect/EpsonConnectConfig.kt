@@ -1,5 +1,6 @@
 package com.chillin.connect
 
+import com.chillin.http.HttpClient
 import okhttp3.OkHttpClient
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 class EpsonConnectConfig {
 
     @Bean
-    fun epsonConnectClient(): EpsonConnectClient {
-        return EpsonConnectClient(OkHttpClient())
+    fun epsonConnectClient(): HttpClient {
+        return HttpClient(OkHttpClient())
     }
 }
