@@ -13,4 +13,9 @@ class AdobeConfig {
     fun authenticationForm(photoshopProperties: AdobePhotoshopProperties): FormBody {
         return photoshopProperties.authenticationForm()
     }
+
+    @Bean
+    fun apiKeyHeader(photoshopProperties: AdobePhotoshopProperties): Pair<String, String> {
+        return photoshopProperties.apiKeyHeader()
+    }
 }

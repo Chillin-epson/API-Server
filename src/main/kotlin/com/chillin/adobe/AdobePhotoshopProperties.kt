@@ -17,4 +17,8 @@ data class AdobePhotoshopProperties(
             .add("grant_type", "client_credentials")
             .build()
     }
+
+    fun apiKeyHeader(): Pair<String, String> {
+        return Pair("x-api-key", clientId)
+    }
 }

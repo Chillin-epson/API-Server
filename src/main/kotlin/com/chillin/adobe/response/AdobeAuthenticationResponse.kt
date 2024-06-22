@@ -1,4 +1,4 @@
-package com.chillin.adobe
+package com.chillin.adobe.response
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy
 import com.fasterxml.jackson.databind.annotation.JsonNaming
