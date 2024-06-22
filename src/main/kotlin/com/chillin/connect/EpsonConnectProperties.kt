@@ -8,9 +8,9 @@ import java.nio.charset.Charset
 
 @ConfigurationProperties(prefix = "custom.epson-connect")
 class EpsonConnectProperties(
-    private var printerAddress: String,
-    private var clientId: String,
-    private var clientSecret: String,
+    private val printerAddress: String,
+    private val clientId: String,
+    private val clientSecret: String,
 ) {
 
     fun basicHeader(charset: Charset? = null): String {
