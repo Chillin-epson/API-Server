@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 class Drawing(
 
     @Column
-    val filename: String,
+    val pathname: String,
 
     @Enumerated(EnumType.STRING)
     val type: DrawingType,

@@ -47,3 +47,5 @@ custom:
     printer-address: ${EPSON_PRINTER_ADDRESS}
     client-id: ${EPSON_CLIENT_ID}
     client-secret: ${EPSON_CLIENT_SECRET}
+  motion:
+      url: ${MOTION_URL}

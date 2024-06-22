@@ -1,9 +1,10 @@
 package com.chillin.connect
 
-import com.chillin.connect.EpsonConnectClient.Companion.bind
 import com.chillin.connect.request.PrintSettingsRequest
 import com.chillin.connect.response.AuthenticationResponse
 import com.chillin.connect.response.PrintSettingsResponse
+import com.chillin.http.HttpClient
+import com.chillin.http.HttpClient.Companion.bind
 import com.chillin.type.MediaSubtype
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit
 @Service
 class EpsonConnectService(
     private val epsonConnectProperties: EpsonConnectProperties,
-    private val epsonConnectClient: EpsonConnectClient,
+    private val httpClient: HttpClient,
     private val redisTemplate: StringRedisTemplate
 ) {
     companion object {
@@ -36,7 +37,7 @@ class EpsonConnectService(
                 .header(HttpHeaders.AUTHORIZATION, epsonConnectProperties.basicHeader())
                 .build()
 
-            epsonConnectClient.call(request)
+            httpClient.call(request)
                 .bind(AuthenticationResponse::class.java)
                 ?.run {
                     redisTemplate.opsForValue().set("deviceId", subjectId)
@@ -60,7 +61,7 @@ class EpsonConnectService(
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .build()
 
-        return epsonConnectClient.call(request)
+        return httpClient.call(request)
             .bind(PrintSettingsResponse::class.java)
             ?.apply {
                 logger.info("Created Job ID: $id")
@@ -82,7 +83,7 @@ class EpsonConnectService(
             .url("$uploadUri&File=1.$extension")
             .build()
 
-        val response = epsonConnectClient.call(request)
+        val response = httpClient.call(request)
         logger.info("Uploaded file to Epson Connect successfully")
 
         return response.isSuccessful
@@ -102,7 +103,7 @@ class EpsonConnectService(
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .build()
 
-        val response = epsonConnectClient.call(request)
+        val response = httpClient.call(request)
         logger.info("Printed file successfully")
 
         return response.isSuccessful

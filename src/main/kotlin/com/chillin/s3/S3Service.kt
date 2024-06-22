@@ -13,7 +13,6 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import java.io.InputStream
 import java.net.URL
 import java.time.Duration
-import java.util.*
 
 @Service
 class S3Service(
@@ -22,44 +21,56 @@ class S3Service(
     private val bucketName: String,
     private val durationMinutes: Long
 ) {
-
     private val logger = LoggerFactory.getLogger(S3Service::class.java)
 
-    fun uploadImage(url: String, prompt: String): Pair<String, String> {
-        val filename = "generated/${UUID.randomUUID()}.${MediaSubtype.JPEG.value}"
-        val contentType = MediaSubtype.parse(filename).toMediaTypeValue()
+    fun uploadImage(pathname: String, url: String, prompt: String): String {
+        val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
-            .key(filename)
+            .key(pathname)
             .contentType(contentType)
             .metadata(mapOf("x-amz-meta-prompt" to prompt))
             .build()
 
         val imageData = URL(url).openStream().use(InputStream::readBytes)
         s3Client.putObject(request, RequestBody.fromBytes(imageData))
+        logger.info("Uploaded file to S3={}", pathname)
 
-        return Pair(filename, getImageUrl(filename))
+        return getImageUrl(pathname)
     }
 
-    fun uploadImage(file: MultipartFile): Pair<String, String> {
-        val extension = MediaSubtype.parse(file.contentType).value
-        val filename = "scanned/${UUID.randomUUID()}.$extension"
+    fun uploadImage(pathname: String, file: MultipartFile): String {
+        val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
-            .key(filename)
-            .contentType(file.contentType)
+            .key(pathname)
+            .contentType(contentType)
             .build()
 
         s3Client.putObject(request, RequestBody.fromBytes(file.bytes))
-        logger.info("Uploaded file to S3={}", filename)
+        logger.info("Uploaded file to S3={}", pathname)
 
-        return Pair(filename, getImageUrl(filename))
+        return getImageUrl(pathname)
     }
 
-    fun getImageUrl(filename: String): String {
+    fun uploadImage(pathname: String, bytes: ByteArray): Pair<String, String> {
+        val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
+        val request = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(pathname)
+            .contentType(contentType)
+            .build()
+
+        s3Client.putObject(request, RequestBody.fromBytes(bytes))
+        logger.info("Uploaded file to S3={}", pathname)
+
+        return Pair(pathname, getImageUrl(pathname))
+    }
+
+    fun getImageUrl(pathname: String): String {
         val getObjectRequest = GetObjectRequest.builder()
             .bucket(bucketName)
-            .key(filename)
+            .key(pathname)
             .build()
 
         val getObjectPresignRequest = GetObjectPresignRequest.builder()
@@ -72,10 +83,10 @@ class S3Service(
             .toString()
     }
 
-    fun getImageData(filename: String): Pair<ByteArray, String> {
+    fun getImageData(pathname: String): Pair<ByteArray, String> {
         val getObjectRequest = GetObjectRequest.builder()
             .bucket(bucketName)
-            .key(filename)
+            .key(pathname)
             .build()
 
         return s3Client.getObjectAsBytes(getObjectRequest).let {
