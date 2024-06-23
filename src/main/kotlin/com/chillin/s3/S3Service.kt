@@ -25,6 +25,9 @@ class S3Service(
     private val logger = LoggerFactory.getLogger(S3Service::class.java)
 
     fun uploadImage(pathname: String, url: String, prompt: String): String {
+        logger.info("Uploading file from \"$url\" to S3...")
+        logger.info("metadata: {\"x-amz-meta-prompt\": \"$prompt\"}")
+
         val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
@@ -35,12 +38,14 @@ class S3Service(
 
         val imageData = URL(url).openStream().use(InputStream::readBytes)
         s3Client.putObject(request, RequestBody.fromBytes(imageData))
-        logger.info("Uploaded file to S3={}", pathname)
+        logger.info("Uploaded file to S3 in \"${pathname}\"")
 
         return getImageUrl(pathname)
     }
 
     fun uploadImage(pathname: String, file: MultipartFile): String {
+        logger.info("Uploading ${file.originalFilename} to S3...")
+
         val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
@@ -49,12 +54,14 @@ class S3Service(
             .build()
 
         s3Client.putObject(request, RequestBody.fromBytes(file.bytes))
-        logger.info("Uploaded file to S3={}", pathname)
+        logger.info("Uploaded file to S3 in \"${pathname}\"")
 
         return getImageUrl(pathname)
     }
 
     fun uploadImage(pathname: String, bytes: ByteArray): Pair<String, String> {
+        logger.info("Uploading bytes to S3...")
+
         val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
         val request = PutObjectRequest.builder()
             .bucket(bucketName)
@@ -63,7 +70,7 @@ class S3Service(
             .build()
 
         s3Client.putObject(request, RequestBody.fromBytes(bytes))
-        logger.info("Uploaded file to S3={}", pathname)
+        logger.info("Uploaded file to S3 in \"${pathname}\"")
 
         return Pair(pathname, getImageUrl(pathname))
     }
@@ -85,9 +92,11 @@ class S3Service(
     }
 
     fun getImageUrlForPOST(pathname: String): String {
+        val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
         val putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(pathname)
+            .contentType(contentType)
             .build()
 
         val request = PutObjectPresignRequest.builder()
@@ -109,6 +118,10 @@ class S3Service(
         return s3Client.getObjectAsBytes(getObjectRequest).let {
             val subtype = it.response().contentType()
             val contentType = MediaSubtype.parse(subtype).toMediaTypeValue()
+
+            logger.info("Downloaded \"$pathname\" from S3")
+            logger.info("Content-Type: $contentType")
+
             Pair(it.asByteArray(), contentType)
         }
     }

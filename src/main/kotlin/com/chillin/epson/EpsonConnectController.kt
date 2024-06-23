@@ -33,8 +33,6 @@ class EpsonConnectController(
 
             adobeService.cutout(downloadUrl, uploadUrl)
             drawingService.save(pathname, DrawingType.SCANNED)
-
-            logger.info("Saved file \"$pathname\" to database")
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.chillin.type
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 
 enum class MediaSubtype(val value: String) {
@@ -10,7 +11,10 @@ enum class MediaSubtype(val value: String) {
     FORM_DATA("form-data");
 
     companion object {
+        private val logger = LoggerFactory.getLogger(MediaSubtype::class.java)
+
         fun parse(contentTypeValue: String?): MediaSubtype {
+            logger.info("Parsing media subtype from \"$contentTypeValue\"")
             return when (contentTypeValue?.substringAfterLast('.')) {
                 PDF.value -> PDF
                 JPEG.value -> JPEG
