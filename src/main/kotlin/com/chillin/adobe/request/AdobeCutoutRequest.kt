@@ -8,7 +8,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.http.MediaType
 
 
-data class CutoutRequest(
+data class AdobeCutoutRequest(
     val input: Input,
     val output: Output
 ) {

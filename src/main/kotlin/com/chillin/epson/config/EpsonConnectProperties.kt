@@ -1,6 +1,5 @@
-package com.chillin.connect
+package com.chillin.epson.config
 
-import com.chillin.connect.request.AuthenticationRequest
 import okhttp3.FormBody
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.http.HttpHeaders
@@ -17,7 +16,11 @@ class EpsonConnectProperties(
         return "Basic ${HttpHeaders.encodeBasicAuth(clientId, clientSecret, charset)}"
     }
 
-    fun authenticationRequest(): FormBody {
-        return AuthenticationRequest(printerAddress).toFormBody()
+    fun authenticationForm(): FormBody {
+        return FormBody.Builder()
+            .add("grant_type", "password")
+            .add("username", printerAddress)
+            .add("password", "")
+            .build()
     }
 }

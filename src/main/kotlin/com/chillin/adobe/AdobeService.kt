@@ -1,7 +1,7 @@
 package com.chillin.adobe
 
-import com.chillin.adobe.request.CutoutRequest
-import com.chillin.adobe.response.AdobeAuthenticationResponse
+import com.chillin.adobe.request.AdobeCutoutRequest
+import com.chillin.adobe.response.AdobeAuthResponse
 import com.chillin.http.HttpClient
 import com.chillin.http.HttpClient.Companion.bind
 import com.chillin.redis.RedisKeyFactory
@@ -33,7 +33,7 @@ class AdobeService(
                 .build()
 
             return httpClient.call(request)
-                .bind(AdobeAuthenticationResponse::class.java)
+                .bind(AdobeAuthResponse::class.java)
                 ?.run {
                     redisTemplate.opsForValue().set(accessTokenKeyName, accessToken)
                     redisTemplate.expire(accessTokenKeyName, expiresIn, TimeUnit.SECONDS)
@@ -50,9 +50,9 @@ class AdobeService(
         logger.info("Requesting background removal to Adobe Photoshop API")
 
         val accessToken = authenticate()
-        val cutoutRequest = CutoutRequest(srcUrl, dstUrl)
+        val adobeCutoutRequest = AdobeCutoutRequest(srcUrl, dstUrl)
         val request = Request.Builder()
-            .post(cutoutRequest.toRequestBody())
+            .post(adobeCutoutRequest.toRequestBody())
             .url(CUTOUT_URL)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .header(apiKeyHeader.first, apiKeyHeader.second)

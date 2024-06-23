@@ -1,4 +1,4 @@
-package com.chillin.connect.request
+package com.chillin.epson.request
 
 import com.chillin.drawing.request.ImagePrintRequest
 import com.chillin.type.PrintMode

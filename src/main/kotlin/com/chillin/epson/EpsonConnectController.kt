@@ -1,4 +1,4 @@
-package com.chillin.connect
+package com.chillin.epson
 
 import com.chillin.adobe.AdobeService
 import com.chillin.drawing.DrawingService

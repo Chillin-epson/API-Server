@@ -1,4 +1,4 @@
-package com.chillin.adobe
+package com.chillin.adobe.config
 
 import okhttp3.FormBody
 import org.springframework.boot.context.properties.EnableConfigurationProperties
