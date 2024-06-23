@@ -5,6 +5,7 @@ import com.chillin.epson.response.EpsonConnectAuthResponse
 import com.chillin.epson.response.PrintSettingsResponse
 import com.chillin.http.HttpClient
 import com.chillin.http.HttpClient.Companion.bind
+import com.chillin.redis.RedisKeyFactory
 import com.chillin.type.MediaSubtype
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
@@ -36,9 +37,13 @@ class EpsonConnectService(
             httpClient.call(request)
                 .bind(EpsonConnectAuthResponse::class.java)
                 ?.run {
-                    redisTemplate.opsForValue().set("deviceId", subjectId)
-                    redisTemplate.opsForValue().set("accessToken", accessToken)
-                    redisTemplate.expire("accessToken", expiresIn, TimeUnit.SECONDS)
+                    val deviceIdKeyName = RedisKeyFactory.create("epson-connect", "device-id")
+                    val tokenKeyName = RedisKeyFactory.create("epson-connect", "access-token")
+
+                    redisTemplate.opsForValue().set(deviceIdKeyName, subjectId)
+                    redisTemplate.opsForValue().set(tokenKeyName, accessToken)
+                    redisTemplate.expire(tokenKeyName, expiresIn, TimeUnit.SECONDS)
+
                     logger.info("Authentication successful")
 
                     accessToken
