@@ -1,7 +1,7 @@
 package com.chillin.drawing
 
-import com.chillin.connect.EpsonConnectService
-import com.chillin.connect.request.PrintSettingsRequest
+import com.chillin.epson.EpsonConnectService
+import com.chillin.epson.request.PrintSettingsRequest
 import com.chillin.drawing.request.ImageGenerationRequest
 import com.chillin.drawing.request.ImagePrintRequest
 import com.chillin.drawing.response.DrawingResponse

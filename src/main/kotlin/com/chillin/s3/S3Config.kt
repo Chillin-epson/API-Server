@@ -16,7 +16,7 @@ class S3Config {
     private lateinit var accessKey: String
 
     @Value("\${custom.aws.secretAccessKey}")
-    private lateinit var secretAcessKey: String
+    private lateinit var secretAccessKey: String
 
     @Value("\${custom.aws.bucket.name}")
     private lateinit var bucketName: String
@@ -27,7 +27,7 @@ class S3Config {
     @Bean
     fun credentialsProvider(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(accessKey, secretAcessKey)
+            AwsBasicCredentials.create(accessKey, secretAccessKey)
         )
     }
 

@@ -1,10 +1,10 @@
-package com.chillin.connect.response
+package com.chillin.epson.response
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 @JsonNaming(SnakeCaseStrategy::class)
-data class AuthenticationResponse(
+data class EpsonConnectAuthResponse(
     val tokenType: String,
     val accessToken: String,
     val expiresIn: Long,

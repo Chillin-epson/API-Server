@@ -48,4 +48,9 @@ custom:
     client-id: ${EPSON_CLIENT_ID}
     client-secret: ${EPSON_CLIENT_SECRET}
   motion:
-      url: ${MOTION_URL}
+    url: ${MOTION_URL}
+  adobe:
+    photoshop:
+      client-id: ${ADOBE_CLIENT_ID}
+      client-secret: ${ADOBE_CLIENT_SECRET}
+      scope: ${ADOBE_SCOPE}

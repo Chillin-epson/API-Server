@@ -1,11 +1,13 @@
-package com.chillin.connect
+package com.chillin.epson
 
-import com.chillin.connect.request.PrintSettingsRequest
-import com.chillin.connect.response.AuthenticationResponse
-import com.chillin.connect.response.PrintSettingsResponse
+import com.chillin.epson.request.PrintSettingsRequest
+import com.chillin.epson.response.EpsonConnectAuthResponse
+import com.chillin.epson.response.PrintSettingsResponse
 import com.chillin.http.HttpClient
 import com.chillin.http.HttpClient.Companion.bind
+import com.chillin.redis.RedisKeyFactory
 import com.chillin.type.MediaSubtype
+import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -17,32 +19,31 @@ import java.util.concurrent.TimeUnit
 
 @Service
 class EpsonConnectService(
-    private val epsonConnectProperties: EpsonConnectProperties,
     private val httpClient: HttpClient,
-    private val redisTemplate: StringRedisTemplate
+    private val redisTemplate: StringRedisTemplate,
+    private val authenticationForm: FormBody,
+    private val basicHeader: String
 ) {
-    companion object {
-        private const val BASE_URL = "https://api.epsonconnect.com"
-    }
-
-    private val logger = LoggerFactory.getLogger(EpsonConnectService::class.java)
-
     fun authenticate(): String {
         return redisTemplate.opsForValue().get("accessToken") ?: run {
             logger.info("Authenticating with Epson Connect API")
 
             val request = Request.Builder()
-                .post(epsonConnectProperties.authenticationRequest())
+                .post(authenticationForm)
                 .url("$BASE_URL/api/1/printing/oauth2/auth/token?subject=printer")
-                .header(HttpHeaders.AUTHORIZATION, epsonConnectProperties.basicHeader())
+                .header(HttpHeaders.AUTHORIZATION, basicHeader)
                 .build()
 
             httpClient.call(request)
-                .bind(AuthenticationResponse::class.java)
+                .bind(EpsonConnectAuthResponse::class.java)
                 ?.run {
-                    redisTemplate.opsForValue().set("deviceId", subjectId)
-                    redisTemplate.opsForValue().set("accessToken", accessToken)
-                    redisTemplate.expire("accessToken", expiresIn, TimeUnit.SECONDS)
+                    val deviceIdKeyName = RedisKeyFactory.create("epson-connect", "device-id")
+                    val tokenKeyName = RedisKeyFactory.create("epson-connect", "access-token")
+
+                    redisTemplate.opsForValue().set(deviceIdKeyName, subjectId)
+                    redisTemplate.opsForValue().set(tokenKeyName, accessToken)
+                    redisTemplate.expire(tokenKeyName, expiresIn, TimeUnit.SECONDS)
+
                     logger.info("Authentication successful")
 
                     accessToken
@@ -107,5 +108,10 @@ class EpsonConnectService(
         logger.info("Printed file successfully")
 
         return response.isSuccessful
+    }
+
+    companion object {
+        private const val BASE_URL = "https://api.epsonconnect.com"
+        private val logger = LoggerFactory.getLogger(EpsonConnectService::class.java)
     }
 }

@@ -1,4 +1,4 @@
-package com.chillin.connect.request
+package com.chillin.epson.request
 
 import com.chillin.type.ColorMode
 import com.chillin.type.MediaSize

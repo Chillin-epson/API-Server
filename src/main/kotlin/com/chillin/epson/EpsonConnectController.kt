@@ -1,5 +1,6 @@
-package com.chillin.connect
+package com.chillin.epson
 
+import com.chillin.adobe.AdobeService
 import com.chillin.drawing.DrawingService
 import com.chillin.s3.S3Service
 import com.chillin.type.DrawingType
@@ -14,7 +15,8 @@ import java.util.*
 @RestController
 class EpsonConnectController(
     private val drawingService: DrawingService,
-    private val s3Service: S3Service
+    private val s3Service: S3Service,
+    private val adobeService: AdobeService
 ) {
     private val logger = LoggerFactory.getLogger(EpsonConnectController::class.java)
 
@@ -26,10 +28,13 @@ class EpsonConnectController(
             val mediaSubtype = MediaSubtype.parse(file.contentType)
             val pathname = "scanned/${UUID.randomUUID()}.${mediaSubtype.value}"
 
-            s3Service.uploadImage(pathname, file)
+            val downloadUrl = s3Service.uploadImage(pathname, file)
+            val uploadUrl = s3Service.getImageUrlForPOST(pathname)
+
+            adobeService.cutout(downloadUrl, uploadUrl)
             drawingService.save(pathname, DrawingType.SCANNED)
 
-            logger.info("Saved file to database={}", pathname)
+            logger.info("Saved file \"$pathname\" to database")
         }
     }
 }
