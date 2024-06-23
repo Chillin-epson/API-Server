@@ -58,11 +58,11 @@ class AdobeService(
             .header(apiKeyHeader.first, apiKeyHeader.second)
             .build()
 
-        val response = httpClient.call(request)
-        return response.apply {
-            if (isSuccessful) logger.info("Background removal request successful")
+        return httpClient.call(request).use { response ->
+            if (response.isSuccessful) logger.info("Background removal request successful")
             else logger.error("Background removal request failed: $response")
-        }.isSuccessful
+            response.isSuccessful
+        }
     }
 
     companion object {

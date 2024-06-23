@@ -8,16 +8,20 @@ import okhttp3.Response
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType.*
+import java.util.concurrent.TimeUnit
 
 class HttpClient(
     private val okHttpClient: OkHttpClient
 ) {
-    fun call(request: Request): Response {
+    fun call(request: Request, readTimeout: Long = 10L, timeUnit: TimeUnit = TimeUnit.SECONDS): Response {
         logger.info("${request.method} ${request.url}")
         logger.info("Headers: ${request.headers.toMap()}")
         logger.info("Body: ${request.body?.content() ?: "{}"}")
 
-        return okHttpClient.newCall(request)
+        return okHttpClient.newBuilder()
+            .readTimeout(readTimeout, timeUnit)
+            .build()
+            .newCall(request)
             .execute()
             .apply(::handleResponse)
     }
@@ -56,9 +60,10 @@ class HttpClient(
         }
 
         fun <T> Response.bind(clazz: Class<T>): T? {
-            return body?.let {
+            return body?.use {
                 val responseBody = it.string()
                 logger.info("Response: $responseBody")
+
                 jacksonObjectMapper().readValue(responseBody, clazz)
             }
         }

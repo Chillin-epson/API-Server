@@ -84,10 +84,14 @@ class EpsonConnectService(
             .url("$uploadUri&File=1.$extension")
             .build()
 
-        val response = httpClient.call(request)
-        logger.info("Uploaded file to Epson Connect successfully")
-
-        return response.isSuccessful
+        return httpClient.call(request).use { response ->
+            if (response.isSuccessful.not()) {
+                logger.error("Failed to upload file to Epson Connect")
+                throw RuntimeException("Failed to upload file to Epson Connect")
+            }
+            logger.info("Uploaded file to Epson Connect successfully")
+            response.isSuccessful
+        }
     }
 
     fun print(fileData: Pair<ByteArray, String>, printSettings: PrintSettingsRequest): Boolean {
@@ -104,10 +108,14 @@ class EpsonConnectService(
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .build()
 
-        val response = httpClient.call(request)
-        logger.info("Printed file successfully")
-
-        return response.isSuccessful
+        return httpClient.call(request).use { response ->
+            if (response.isSuccessful.not()) {
+                logger.error("Failed to print file")
+                throw RuntimeException("Failed to print file")
+            }
+            logger.info("Printed file successfully")
+            response.isSuccessful
+        }
     }
 
     companion object {
