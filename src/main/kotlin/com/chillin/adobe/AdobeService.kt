@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 class AdobeService(
     private val httpClient: HttpClient,
     private val redisTemplate: StringRedisTemplate,
-    private val authenticationForm: FormBody,
+    private val adobeAuthForm: FormBody,
     private val apiKeyHeader: Pair<String, String>
 ) {
 
@@ -28,7 +28,7 @@ class AdobeService(
             logger.info("Authenticating with Adobe Photoshop API")
 
             val request = Request.Builder()
-                .post(authenticationForm)
+                .post(adobeAuthForm)
                 .url(AUTH_URL)
                 .build()
 
