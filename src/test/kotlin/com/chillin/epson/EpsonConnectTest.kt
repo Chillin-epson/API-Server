@@ -1,6 +1,7 @@
 package com.chillin.epson
 
 import com.chillin.epson.request.PrintSettingsRequest
+import com.chillin.redis.RedisKeyFactory
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -15,13 +16,15 @@ class EpsonConnectTest(
     private val epsonConnectService: EpsonConnectService,
     private val redisTemplate: StringRedisTemplate
 ) : BehaviorSpec({
+    val accessTokenName = RedisKeyFactory.create("epson-connect", "access-token")
 
     given("인증을 한번도 하지 않았을 때") {
+
         `when`("인증을 시도해 성공하면") {
             val accessToken = epsonConnectService.authenticate()
 
             then("레디스에 액세스 토큰이 저장되어야 한다.") {
-                val redisAccessToken = redisTemplate.opsForValue().get("accessToken")
+                val redisAccessToken = redisTemplate.opsForValue().get(accessTokenName)
 
                 redisAccessToken shouldNotBe null
                 accessToken shouldBe redisAccessToken
@@ -32,11 +35,11 @@ class EpsonConnectTest(
     given("인증을 한번 진행하고") {
         val accessToken = epsonConnectService.authenticate()
         `when`("토큰이 만료된 후 인증을 한번 더 시도하면") {
-            redisTemplate.opsForValue().getAndDelete("accessToken")
+            redisTemplate.opsForValue().getAndDelete(accessTokenName)
             epsonConnectService.authenticate()
 
             then("만료된 토큰과 새로 발급된 토큰이 달라야 한다.") {
-                val redisAccessToken = redisTemplate.opsForValue().get("accessToken")
+                val redisAccessToken = redisTemplate.opsForValue().get(accessTokenName)
 
                 redisAccessToken shouldNotBe null
                 accessToken shouldNotBe redisAccessToken
