@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 class EpsonConnectService(
     private val httpClient: HttpClient,
     private val redisTemplate: StringRedisTemplate,
-    private val authenticationForm: FormBody,
+    private val epsonAuthForm: FormBody,
     private val basicHeader: String
 ) {
     fun authenticate(): String {
@@ -30,7 +30,7 @@ class EpsonConnectService(
             logger.info("Authenticating with Epson Connect API")
 
             val request = Request.Builder()
-                .post(authenticationForm)
+                .post(epsonAuthForm)
                 .url("$BASE_URL/api/1/printing/oauth2/auth/token?subject=printer")
                 .header(HttpHeaders.AUTHORIZATION, basicHeader)
                 .build()
