@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 class AdobeConfig {
 
     @Bean
-    fun authenticationForm(photoshopProperties: AdobePhotoshopProperties): FormBody {
+    fun adobeAuthForm(photoshopProperties: AdobePhotoshopProperties): FormBody {
         return photoshopProperties.authenticationForm()
     }
 

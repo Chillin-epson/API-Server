@@ -15,7 +15,7 @@ class EpsonConnectConfig {
     }
 
     @Bean
-    fun authenticationHeader(epsonConnectProperties: EpsonConnectProperties): FormBody {
+    fun epsonAuthForm(epsonConnectProperties: EpsonConnectProperties): FormBody {
         return epsonConnectProperties.authenticationForm()
     }
 }
