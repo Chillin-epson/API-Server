@@ -25,7 +25,8 @@ class EpsonConnectService(
     private val basicHeader: String
 ) {
     fun authenticate(): String {
-        return redisTemplate.opsForValue().get("accessToken") ?: run {
+        val accessTokenKeyName = RedisKeyFactory.create("epson-connect", "access-token")
+        return redisTemplate.opsForValue().get(accessTokenKeyName) ?: run {
             logger.info("Authenticating with Epson Connect API")
 
             val request = Request.Builder()
@@ -38,11 +39,10 @@ class EpsonConnectService(
                 .bind(EpsonConnectAuthResponse::class.java)
                 ?.run {
                     val deviceIdKeyName = RedisKeyFactory.create("epson-connect", "device-id")
-                    val tokenKeyName = RedisKeyFactory.create("epson-connect", "access-token")
 
                     redisTemplate.opsForValue().set(deviceIdKeyName, subjectId)
-                    redisTemplate.opsForValue().set(tokenKeyName, accessToken)
-                    redisTemplate.expire(tokenKeyName, expiresIn, TimeUnit.SECONDS)
+                    redisTemplate.opsForValue().set(accessTokenKeyName, accessToken)
+                    redisTemplate.expire(accessTokenKeyName, expiresIn, TimeUnit.SECONDS)
 
                     logger.info("Authentication successful")
 
@@ -54,7 +54,8 @@ class EpsonConnectService(
     fun setPrintSettings(printSettings: PrintSettingsRequest): PrintSettingsResponse {
         logger.info("Setting print settings")
         val accessToken = authenticate()
-        val deviceId = redisTemplate.opsForValue().get("deviceId")
+        val deviceIdKeyName = RedisKeyFactory.create("epson-connect", "device-id")
+        val deviceId = redisTemplate.opsForValue().get(deviceIdKeyName)
 
         val request = Request.Builder()
             .post(printSettings.toRequestBody())
@@ -100,7 +101,8 @@ class EpsonConnectService(
 
         logger.info("Executing print job: $jobId")
         val accessToken = authenticate()
-        val deviceId = redisTemplate.opsForValue().get("deviceId")
+        val deviceIdKeyName = RedisKeyFactory.create("epson-connect", "device-id")
+        val deviceId = redisTemplate.opsForValue().get(deviceIdKeyName)
 
         val request = Request.Builder()
             .post("".toRequestBody())
