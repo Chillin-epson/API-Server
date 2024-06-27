@@ -23,7 +23,7 @@ class MotionService(
 
         val request = Request.Builder()
             .post(formData)
-            .url("$baseUrl/motion")
+            .url("$baseUrl/motion/")
             .build()
 
         val gifBytes = httpClient.call(request, 5L, TimeUnit.MINUTES).use { response ->
