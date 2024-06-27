@@ -2,6 +2,7 @@ package com.chillin.adobe
 
 import com.chillin.adobe.request.AdobeCutoutRequest
 import com.chillin.adobe.response.AdobeAuthResponse
+import com.chillin.adobe.response.AdobeStatusResponse
 import com.chillin.http.HttpClient
 import com.chillin.http.HttpClient.Companion.bind
 import com.chillin.redis.RedisKeyFactory
@@ -46,7 +47,7 @@ class AdobeService(
         }
     }
 
-    fun cutout(srcUrl: String, dstUrl: String): Boolean {
+    fun cutout(srcUrl: String, dstUrl: String): AdobeStatusResponse {
         logger.info("Requesting background removal to Adobe Photoshop API")
 
         val accessToken = authenticate()
@@ -58,11 +59,9 @@ class AdobeService(
             .header(apiKeyHeader.first, apiKeyHeader.second)
             .build()
 
-        return httpClient.call(request).use { response ->
-            if (response.isSuccessful) logger.info("Background removal request successful")
-            else logger.error("Background removal request failed: $response")
-            response.isSuccessful
-        }
+        return httpClient.call(request)
+            .bind(AdobeStatusResponse::class.java)
+            ?: throw RuntimeException("Failed to request background removal to Adobe Photoshop API")
     }
 
     companion object {

@@ -8,7 +8,8 @@ enum class MediaSubtype(val value: String) {
     JPEG("jpeg"),
     GIF("gif"),
     JSON("json"),
-    FORM_DATA("form-data");
+    FORM_DATA("form-data"),
+    ALL("*");
 
     companion object {
         private val logger = LoggerFactory.getLogger(MediaSubtype::class.java)
@@ -20,11 +21,13 @@ enum class MediaSubtype(val value: String) {
                 JPEG.value -> JPEG
                 GIF.value -> GIF
                 JSON.value -> JSON
+                ALL.value -> ALL
                 MediaType.APPLICATION_PDF_VALUE -> PDF
                 MediaType.IMAGE_JPEG_VALUE -> JPEG
                 MediaType.IMAGE_GIF_VALUE -> GIF
                 MediaType.APPLICATION_JSON_VALUE -> JSON
                 MediaType.MULTIPART_FORM_DATA_VALUE -> FORM_DATA
+                MediaType.ALL_VALUE -> ALL
                 else -> throw IllegalArgumentException("Unsupported media type")
             }
         }
@@ -33,7 +36,7 @@ enum class MediaSubtype(val value: String) {
     fun toMediaTypeValue(): String {
         return when (this) {
             PDF -> MediaType.APPLICATION_PDF_VALUE
-            JPEG -> MediaType.IMAGE_JPEG_VALUE
+            JPEG, ALL -> MediaType.IMAGE_JPEG_VALUE
             GIF -> MediaType.IMAGE_GIF_VALUE
             JSON -> MediaType.APPLICATION_JSON_VALUE
             FORM_DATA -> MediaType.MULTIPART_FORM_DATA_VALUE

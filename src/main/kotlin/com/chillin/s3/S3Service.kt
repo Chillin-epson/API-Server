@@ -92,11 +92,11 @@ class S3Service(
     }
 
     fun getImageUrlForPOST(pathname: String): String {
-        val contentType = MediaSubtype.parse(pathname).toMediaTypeValue()
+        logger.info("Generating presigned URL for uploading image to S3...: pathname=$pathname")
+
         val putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(pathname)
-            .contentType(contentType)
             .build()
 
         val request = PutObjectPresignRequest.builder()
@@ -104,9 +104,10 @@ class S3Service(
             .signatureDuration(Duration.ofMinutes(durationMinutes))
             .build()
 
-        return s3Presigner.presignPutObject(request)
-            .url()
-            .toString()
+        return s3Presigner.presignPutObject(request).let {
+            logger.info("Generated presigned URL for uploading image to S3: ${it.url()}")
+            it.url().toExternalForm()
+        }
     }
 
     fun getImageData(pathname: String): Pair<ByteArray, String> {
