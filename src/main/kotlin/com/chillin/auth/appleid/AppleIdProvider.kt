@@ -1,4 +1,4 @@
-package com.chillin.auth
+package com.chillin.auth.appleid
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
@@ -14,7 +14,7 @@ import java.util.*
 
 
 @ConfigurationProperties(prefix = "custom.oauth2.apple")
-data class AppleIdProperties(
+data class AppleIdProvider(
     private val clientId: String,
     private val keyId: String,
     private val teamId: String,
@@ -37,10 +37,10 @@ data class AppleIdProperties(
         }
     }
 
-    fun toTokenFormBody(code: String): FormBody {
+    fun createTokenFormBody(code: String): FormBody {
         return FormBody.Builder()
             .add("client_id", clientId)
-            .add("client_secret", clientSecret())
+            .add("client_secret", createClientSecret())
             .add("code", code)
             .add("grant_type", "authorization_code")
             .build()
@@ -51,11 +51,11 @@ data class AppleIdProperties(
      * @return A client secret
      * @see <a href="https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret">Creating a client secret</a>
      */
-    private fun clientSecret(): String {
+    private fun createClientSecret(): String {
         logger.info("Creating client secret...")
 
         val iat = Date()
-        val exp = Date(iat.time).toInstant().plusSeconds(EXP_SECONDS)
+        val exp = Date(iat.toInstant().plusSeconds(EXP_SECONDS).toEpochMilli())
         val privateKey = loadPrivateKey()
 
         return Jwts.builder()
@@ -63,7 +63,7 @@ data class AppleIdProperties(
             .claims()
             .issuer(teamId)
             .issuedAt(iat)
-            .expiration(Date(exp.toEpochMilli()))
+            .expiration(exp)
             .audience().add(BASE_URL).and()
             .subject(clientId).and()
             .signWith(privateKey, Jwts.SIG.ES256)
@@ -82,6 +82,6 @@ data class AppleIdProperties(
         private const val BASE_URL = "https://appleid.apple.com"
         private const val KEY_TYPE = "EC"
         private const val EXP_SECONDS = 5 * 60L // 5 minutes
-        private val logger = LoggerFactory.getLogger(AppleIdProperties::class.java)
+        private val logger = LoggerFactory.getLogger(AppleIdProvider::class.java)
     }
 }

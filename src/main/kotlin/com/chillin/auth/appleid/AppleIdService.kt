@@ -1,4 +1,4 @@
-package com.chillin.auth
+package com.chillin.auth.appleid
 
 import com.chillin.auth.response.AppleIdTokenResponse
 import com.chillin.auth.response.JWKSetResponse
@@ -37,7 +37,7 @@ class AppleIdService(
     private fun verifyCode(code: String): AppleIdTokenResponse {
         logger.info("Verifying code=$code")
 
-        val formBody = provider.tokenForm(code)
+        val formBody = provider.createTokenFormBody(code)
         val request = Request.Builder()
             .post(formBody)
             .url("$BASE_URL/auth/oauth2/v2/token")
