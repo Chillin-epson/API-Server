@@ -6,9 +6,11 @@ import com.chillin.auth.response.TokenResponse
 import com.chillin.member.MemberService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RestController("/auth")
+@RestController
+@RequestMapping("/auth")
 class AuthController(
     private val appleIdService: AppleIdService,
     private val memberService: MemberService,

@@ -38,3 +38,8 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Custom ###
+application-*.yaml
+application-*.yml
+*.properties
