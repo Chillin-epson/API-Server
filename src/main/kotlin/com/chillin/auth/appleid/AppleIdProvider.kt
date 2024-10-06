@@ -73,7 +73,7 @@ data class AppleIdProvider(
     private fun loadPrivateKey(): PrivateKey {
         logger.info("Loading private key...")
 
-        val keyBytes = Base64.getDecoder().decode(privateKey)
+        val keyBytes = Base64.getDecoder().decode(privateKey.replace(Regex(REGEX_SPACES), EMPTY_STRING))
         val keySpec = PKCS8EncodedKeySpec(keyBytes)
         return KeyFactory.getInstance(KEY_TYPE).generatePrivate(keySpec)
     }
@@ -82,6 +82,8 @@ data class AppleIdProvider(
         private const val BASE_URL = "https://appleid.apple.com"
         private const val KEY_TYPE = "EC"
         private const val EXP_SECONDS = 5 * 60L // 5 minutes
+        private const val REGEX_SPACES = "\\s+"
+        private const val EMPTY_STRING = ""
         private val logger = LoggerFactory.getLogger(AppleIdProvider::class.java)
     }
 }
