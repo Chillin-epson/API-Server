@@ -1,6 +1,8 @@
 package com.chillin.auth
 
 import com.chillin.auth.response.TokenResponse
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -9,16 +11,17 @@ import java.util.*
 
 @ConfigurationProperties(prefix = "custom.jwt")
 class JwtProvider(
-    private val secretKey: String,
+    secretKey: String,
     private val issuer: String,
 
     @NestedConfigurationProperty
     private val expiration: TokenExpiration
 ) {
 
+    private val sig = Keys.hmacShaKeyFor(secretKey.toByteArray())
+
     fun issueToken(accountId: String): TokenResponse {
         val iat = Date()
-        val sig = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
         val accessToken = Jwts.builder()
             .claims()
@@ -41,5 +44,18 @@ class JwtProvider(
             .compact()
 
         return TokenResponse(accessToken, refreshToken)
+    }
+
+    fun validate(token: String): Claims {
+        try {
+            return Jwts.parser()
+                .verifyWith(sig)
+                .requireIssuer(issuer)
+                .build()
+                .parseSignedClaims(token)
+                .payload
+        } catch (e: JwtException) {
+            throw JwtException("Failed to verify token", e)
+        }
     }
 }
