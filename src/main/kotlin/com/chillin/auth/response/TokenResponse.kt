@@ -1,7 +1,7 @@
 package com.chillin.auth.response
 
 data class TokenResponse(
-    val token: String,
-    val expiresIn: Long,
+    val accessToken: String,
+    val refreshToken: String,
     val grantType: String = "Bearer"
 )

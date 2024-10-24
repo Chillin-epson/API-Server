@@ -1,6 +1,7 @@
 package com.chillin.drawing
 
 import com.chillin.drawing.domain.Drawing
+import com.chillin.member.Member
 import com.chillin.type.DrawingType
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -12,13 +13,14 @@ class DrawingService(
     private val logger = LoggerFactory.getLogger(DrawingService::class.java)
 
     fun save(
+        member: Member,
         pathname: String,
         drawingType: DrawingType,
         rawPrompt: String? = null,
         revisedPrompt: String? = null
     ): Drawing {
         logger.info("Saving drawing to db...")
-        val drawing = Drawing(pathname, drawingType, rawPrompt, revisedPrompt)
+        val drawing = Drawing(member, pathname, drawingType, rawPrompt, revisedPrompt)
 
         return drawingRepository.save(drawing).apply {
             logger.info("Saved drawing to db: drawingId=${drawingId}, pathname=$pathname, drawingType=$drawingType, rawPrompt=$rawPrompt, revisedPrompt=$revisedPrompt")
@@ -36,5 +38,6 @@ class DrawingService(
             }
     }
 
-    fun getAllByType(type: DrawingType) = drawingRepository.findAllByTypeOrderByCreatedAtDesc(type)
+    fun getMyDrawingsByType(type: DrawingType, member: Member) =
+        drawingRepository.findAllByType(type, member)
 }

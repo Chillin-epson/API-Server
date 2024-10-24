@@ -14,6 +14,10 @@ class MemberService(
         memberRepository.save(member)
     }
 
+    fun findMemberByAccountId(accountId: String): Member {
+        return memberRepository.findByAccountId(accountId) ?: throw RuntimeException("Member not found")
+    }
+
     companion object {
         private val logger = LoggerFactory.getLogger(MemberService::class.java)
     }
